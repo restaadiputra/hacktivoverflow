@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const Answer = require('./answer')
 
 const questionSchema = new Schema({
   createdBy: {
@@ -35,6 +36,18 @@ const questionSchema = new Schema({
     ref: 'Answer'
   }]
 });
+
+questionSchema.post('findOneAndDelete', function (doc, next) {
+  Answer.findOneAndDelete({
+    question: doc._id
+  })
+  .then((result) => {
+    next()
+  })
+  .catch((err) => {
+    console.log(err);  
+  });
+})
 
 const Question = mongoose.model('Question', questionSchema);
 
