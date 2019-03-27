@@ -81,9 +81,9 @@
               <div class="row d-flex justify-content-end mt-3">
                 <router-link v-if="answer.createdBy._id === getId"  :to="'/answers/' + answer._id + '/edit'" class="btn btn-outline-info"><i class="fas fa-edit"></i> Edit</router-link>
                 
-                <button v-on:click="acceptAnswer(answer._id)" v-if="answer.createdBy._id !== getId && question.acceptedAnswer === undefined" class="btn btn-outline-success"><i class="fas fa-vote-yea"></i> Accept this answer</button>
+                <button v-on:click="confirmAccepted(answer._id)" v-if="answer.createdBy._id !== getId && getAccepted" class="btn btn-outline-success"><i class="fas fa-vote-yea"></i> Accept this answer</button>
                 
-                <button v-if="question.acceptedAnswer !== undefined && String(answer._id) === String(question.acceptedAnswer)" class="btn btn-success" disabled><i class="fas fa-vote-yea"></i> Accepted answer</button>
+                <button v-if="!getAccepted && String(answer._id) === String(question.acceptedAnswer)" class="btn btn-success" disabled><i class="fas fa-vote-yea"></i> Accepted answer</button>
               </div>
             <hr>
             </div>
@@ -135,8 +135,12 @@ export default {
   },
   computed: {
     getId() {
+      console.log(localStorage.getItem('id'))
       return localStorage.getItem('id')
     },
+    getAccepted() {
+      return this.question.acceptedAnswer === undefined;
+    }
   },
   methods: {
     timeAgo(second) {
@@ -256,6 +260,7 @@ export default {
           },
         })
         .then(({ data }) => {
+          console.log(data)
           this.question.answers.push(data);
           this.clearAnswer();
         })
@@ -328,8 +333,21 @@ export default {
           console.log(err.response.data.message);
         });
     },
+    confirmAccepted(id) {
+      swal({
+        title: "Are you sure?",
+        text: "Do you want to accept this answer as the best answer?",
+        icon: "warning",
+        buttons: true,
+        dangerMode: true,
+      })
+      .then((willDelete) => {
+        if (willDelete) {
+          this.acceptAnswer(id)
+        }
+      });
+    },
     acceptAnswer(id) {
-      console.log('masuk')
       const token = localStorage.getItem('token');
       this.$axios
         .patch(`/questions/${this.$route.params.id}`, {id}, {
@@ -340,6 +358,12 @@ export default {
         )
         .then(({ data }) => {
           this.question.acceptedAnswer = data.acceptedAnswer
+          this.$swal({
+              title: "Accepted",
+              text: 'One of these answer has been selected to be the accepted answer.',
+              icon: "success",
+              button: "close",
+            });
         })
         .catch((err) => {
           this.$swal({

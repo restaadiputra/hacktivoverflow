@@ -45,15 +45,17 @@ function addAnswer({ body, decoded }, res, next) {
       content: body.content
     })
     .then(answer => {
+      console.log('contoh',answer)
       newAnswer = answer
       return Question.findById(answer.questionId)
     })
     .then(question => {
       question.answers.push(newAnswer._id)
-      return Promise.all([question.save(), User.findOne({_id: question.createdBy})]) 
+      return Promise.all([question.save(), User.findOne({_id: newAnswer.createdBy})]) 
     })
     .then(([question, user]) => {
       newAnswer.createdBy = user
+      console.log(newAnswer)
       res.status(201).json(newAnswer)
     })
     .catch(err => {

@@ -38,19 +38,6 @@
         </div>
       </div>
 
-      <div class="col-sm-12 mb-4">
-        <div class="card">
-          <div class="card-header bg-success text-white text-center">
-            Summary
-          </div>
-          <div class="card-body">
-            <p class="card-text">Question : 10</p>
-            <p class="card-text">Answered question : 5</p>
-            <p class="card-text">Question voted : 30</p>
-            <p class="card-text">Answer voted : 40</p>
-          </div>
-        </div>
-      </div>
       
     </div>
   </div>
