@@ -4,7 +4,13 @@ const mongoose = require('mongoose');
 function findAll(req, res, next) {
   Question
     .find()
-    .populate('answers')
+    // .populate({
+    //   path: 'answers',
+    //   populate: {
+    //     path: 'createdBy'
+    //   }
+    // })
+    .populate('createdBy')
     .then(questions => {
       res.status(200).json(questions);
     })
@@ -15,7 +21,14 @@ function findAll(req, res, next) {
 
 function findOne({ params }, res, next) {
   Question
-    .findById(params.id)
+    .findOne({_id: params.id})
+    .populate({
+      path: 'answers',
+      populate: {
+        path: 'createdBy'
+      }
+    })
+    .populate('createdBy')
     .then(question => {
       if(question) {
         res.status(200).json(question);
@@ -32,7 +45,7 @@ function findOne({ params }, res, next) {
 
 function findAllByUserId({ decoded }, res, next) {
   Question
-    .find({ userId: decoded.id })
+    .find({ createdBy: decoded.id })
     .then(questions => {
       res.status(200).json(questions);
     })
@@ -164,6 +177,30 @@ function downvote({ params, decoded }, res, next) {
     });
 }
 
+function acceptAnswer({ params, body }, res, next) { 
+  const opts = {
+    new: true,
+    runValidators: true,
+    context: 'query'
+  };
+
+  Question
+    .findOneAndUpdate({ _id: params.id }, { acceptedAnswer: body.id }, opts)
+    .then(question => {
+      if(question) {
+        res.status(200).json(question);
+      } else {
+        res.status(404).json({
+          message: 'Question not found.'
+        });
+      }
+    })
+    .catch(err => {
+      next(err);
+    });
+
+}
+
 
 
 module.exports = {
@@ -175,4 +212,5 @@ module.exports = {
   findAllByUserId,
   upvote,
   downvote,
+  acceptAnswer,
 };

@@ -34,19 +34,35 @@ const questionSchema = new Schema({
   answers: [{
     type:Schema.Types.ObjectId,
     ref: 'Answer'
-  }]
+  }],
+  acceptedAnswer: {
+    type: Schema.Types.ObjectId,
+    ref: 'Answer'
+  }
+},
+{ 
+  timestamps: { 
+    createdAt: 'created_at',
+    updatedAt: 'updated_at' 
+  }
 });
 
 questionSchema.post('findOneAndDelete', function (doc, next) {
-  Answer.findOneAndDelete({
-    question: doc._id
-  })
-  .then((result) => {
+  if(doc.answers.length > 0) {
+    console.log(Answer.deleteMany)
+    Answer.deleteMany({
+      _id: { $in: doc.answers}
+    })
+    .then((result) => {
+      console.log('selesai hapus')
+      next()
+    })
+    .catch((err) => {
+      console.log(err);  
+    });
+  } else {
     next()
-  })
-  .catch((err) => {
-    console.log(err);  
-  });
+  }
 })
 
 const Question = mongoose.model('Question', questionSchema);

@@ -1,12 +1,13 @@
 const answers = require('express').Router();
 const { AnswerController } = require('../controllers');
 const { authenticate } = require('../middlewares/authenticate');
-const { authorize } = require('../middlewares/authorize');
+const { authorize } = require('../middlewares/authorizeAnswer');
 
 // authentication needed
 answers.use('/', authenticate);
 answers.get('/', AnswerController.findAllByUserId);
 answers.post('/',  AnswerController.addAnswer);
+answers.get('/:id', AnswerController.findOne);
 answers.post('/:id/upvote',  AnswerController.upvote);
 answers.post('/:id/downvote',  AnswerController.downvote);
 

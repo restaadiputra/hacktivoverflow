@@ -1,7 +1,7 @@
 const questions = require('express').Router();
 const { QuestionController } = require('../controllers');
 const { authenticate } = require('../middlewares/authenticate');
-const { authorize } = require('../middlewares/authorize');
+const { authorize } = require('../middlewares/authorizeQuestion');
 
 // special authenticate user only
 questions.get('/user', authenticate,QuestionController.findAllByUserId);
@@ -18,6 +18,7 @@ questions.post('/:id/downvote',  QuestionController.downvote);
 
 // authorization needed
 questions.put('/:id',  authorize, QuestionController.updateQuestion);
-questions.delete('/:id',  authorize,QuestionController.deleteQuestion);
+questions.delete('/:id',  authorize, QuestionController.deleteQuestion);
+questions.patch('/:id',  authorize, QuestionController.acceptAnswer);
 
 module.exports = questions;

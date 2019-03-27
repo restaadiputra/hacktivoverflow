@@ -1,11 +1,34 @@
-const { Answer, Question } = require('../models');
+const { Answer, Question, User } = require('../models');
 const mongoose = require('mongoose');
 
 function findAllByUserId({ decoded }, res, next) {
   Answer
-    .find({ userId: decoded.id })
+    .find({ createdBy: decoded.id })
     .then(answers => {
       res.status(200).json(answers)
+    })
+    .catch(err => {
+      next(err)
+    })
+}
+
+function findOne({ params }, res, next) {
+  Answer
+    .findOne({ _id: params.id })
+    .populate({
+      path:'questionId',
+      populate: {
+        path: 'createdBy'
+      }
+    })
+    .then(answer => {
+      if(answer) {
+        res.status(200).json(answer);
+      } else {
+        res.status(404).json({
+          message: 'Answer not found.'
+        })
+      }
     })
     .catch(err => {
       next(err)
@@ -27,9 +50,10 @@ function addAnswer({ body, decoded }, res, next) {
     })
     .then(question => {
       question.answers.push(newAnswer._id)
-      return question.save()
+      return Promise.all([question.save(), User.findOne({_id: question.createdBy})]) 
     })
-    .then(() => {
+    .then(([question, user]) => {
+      newAnswer.createdBy = user
       res.status(201).json(newAnswer)
     })
     .catch(err => {
@@ -44,6 +68,7 @@ function addAnswer({ body, decoded }, res, next) {
 }
 
 function updateAnswer({ params, body }, res, next) {
+  console.log('masuk')
   const opts = {
     new: true,
     runValidators: true,
@@ -62,21 +87,29 @@ function updateAnswer({ params, body }, res, next) {
       }
     })
     .catch(err => {
+      console.log(err)
       next(err);
     });
 }
 
 function deleteAnswer({ params }, res, next) {
+  let delAnswer = null
   Answer
-    .findOneAndUpdate({ _id: params.id })
+    .findOneAndDelete({ _id: params.id })
     .then(answer => {
       if(answer) {
-        res.status(200).json(answer);
+        delAnswer = answer
+        return Question.findOne({ _id: answer.questionId })
+        
       } else {
         res.status(404).json({
           message: 'Answer not found.'
         });
       }
+    })
+    .then(question => {
+      question.answers.splice(question.answers.indexOf(delAnswer._id), 1)
+      res.status(200).json(delAnswer);
     })
     .catch(err => {
       next(err);
@@ -142,7 +175,8 @@ function downvote({ params, decoded }, res, next) {
 }
 
 module.exports = {
-  findAllByUserId, 
+  findAllByUserId,
+  findOne, 
   addAnswer,
   updateAnswer,
   deleteAnswer,
