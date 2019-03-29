@@ -4,7 +4,7 @@ const secret = process.env.JWT_SECRET
 
 module.exports = {
   authenticate(req, res, next) {
-    jwt.verify(req.headers.token, secret, (err, decoded) => {
+    jwt.verify(req.headers.accessToken, secret, (err, decoded) => {
       if (!err) {
         User.findById(decoded.id, (err, user) => {
           if (!err) {

@@ -3,7 +3,7 @@ const nodemailer = require("nodemailer");
 
 function sendEmail(data) {
   const transporter = nodemailer.createTransport({
-    service: "Gmail",
+    service: "gmail",
     auth: {
       user: process.env.EMAIL,
       pass: process.env.PASSWORD
@@ -11,7 +11,7 @@ function sendEmail(data) {
   });
 
   const mailOptions = {
-    from: "resta.adiputra@gmail.com",
+    from: "hacktivportfolio@gmail.com",
     to: data.email,
     subject: "Happy Weekend",
     html:

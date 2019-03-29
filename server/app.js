@@ -13,7 +13,7 @@ const sendEmail = require('./helpers/sendEmail')
 
 mongoose.set('useFindAndModify', false);
 
-mongoose.connect(`mongodb://localhost/hacktivoverflow`, 
+mongoose.connect(process.env.MONGOODB, 
 { 
   useNewUrlParser: true,
   useCreateIndex: true 
@@ -27,7 +27,7 @@ cron.schedule(cronWeekend, () => {
     .then(users => {
       users.forEach(user => {
         Question
-          .find({_id: params.id})
+          .find({_id: user._id})
           .then(questions => {
             queue.create('send-question-count', {
               email: user.email,
